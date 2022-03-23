@@ -3,6 +3,7 @@
 
   var startStopBtn
   var fibsList
+  var worker
 
   document.addEventListener('DOMContentLoaded', ready, false)
 
@@ -15,9 +16,9 @@
     startStopBtn.addEventListener('click', startFibs, false)
   }
 
-  function renderFib(num, fib) {
+  function renderFib(index, num) {
     var p = document.createElement('div')
-    p.innerText = `Fib(${num}): ${fib}`
+    p.innerText = `Fib(${index}): ${num}`
     if (fibsList.childNodes.length > 0) {
       fibsList.insertBefore(p, fibsList.childNodes[0])
     } else {
@@ -31,6 +32,11 @@
 
     startStopBtn.innerText = 'Stop'
     fibsList.innerHTML = ''
+
+    // spin up a web worker
+    worker = new Worker('/js/worker.js')
+    worker.addEventListener('message', onMessage)
+    worker.postMessage({start: true})
   }
 
   function stopFibs() {
@@ -39,6 +45,10 @@
 
     startStopBtn.innerText = 'Start'
 
-    // TODO
+    worker.terminate()
+  }
+
+  function onMessage({data: {index, num}}) {
+    renderFib(index, num)
   }
 })()
